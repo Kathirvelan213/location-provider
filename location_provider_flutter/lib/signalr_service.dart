@@ -174,6 +174,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class SignalRServiceClass {
   late final HubConnection _hubConnection;
   bool _isConnecting = false;
+  final routeId = 1;
 
   SignalRServiceClass() {
     if (Platform.isAndroid && kDebugMode) {
@@ -181,6 +182,7 @@ class SignalRServiceClass {
     }
 
     final hubUrl = AppConfig.hubUrl;
+    print(hubUrl);
 
     _hubConnection = HubConnectionBuilder()
         .withUrl(
@@ -192,7 +194,8 @@ class SignalRServiceClass {
         .withAutomaticReconnect(
       retryDelays: [0, 2000, 5000, 10000], // ms
     ).build();
-
+    _hubConnection.serverTimeoutInMilliseconds = 30000; // 30s
+    _hubConnection.keepAliveIntervalInMilliseconds = 15000;
     // Handlers
     _hubConnection.on("receiveAcknowledgement", confirmConnection);
 
@@ -250,8 +253,8 @@ class SignalRServiceClass {
       print(
           "Sending location: lat=${location.latitude}, lng=${location.longitude}");
       await _hubConnection.invoke(
-        "BusLocationToClients",
-        args: [location.latitude, location.longitude],
+        "SendLocationUpdate",
+        args: [routeId, location.latitude, location.longitude],
       );
       print("Location sent successfully");
     } catch (error) {

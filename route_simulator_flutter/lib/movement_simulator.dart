@@ -9,12 +9,15 @@ class MockLocationStreamer {
   int step = 1;
 
   MockLocationStreamer(this.coordinates,
-      {this.interval = const Duration(seconds: 1)});
+      {this.interval = const Duration(milliseconds: 1)});
 
   Stream<RouteCoordinate> start() async* {
+    int batchSize = 100;
     for (int i = 0; i < coordinates.length; i += step) {
       yield coordinates[i];
-      // await Future.delayed(interval);
+      if ((i + 1) % batchSize == 0) {
+        await Future.delayed(interval);
+      }
     }
   }
 }
